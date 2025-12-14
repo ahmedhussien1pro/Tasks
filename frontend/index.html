@@ -175,7 +175,7 @@
         if (newUrl) {
           API_BASE_URL = newUrl;
           localStorage.setItem('apiUrl', newUrl);
-          showStatus('API URL updated', 'success');
+          alert('API URL updated successfully');
           loadTasks();
         }
       }
@@ -185,25 +185,6 @@
       if (savedApiUrl) {
         API_BASE_URL = savedApiUrl;
         document.getElementById('apiUrl').value = savedApiUrl;
-      }
-
-      // Show status message
-      function showStatus(message, type = 'info') {
-        const status = document.getElementById('apiStatus');
-        const colors = {
-          info: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
-          success:
-            'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
-          error: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200',
-        };
-        const icons = {
-          info: 'fa-sync-alt fa-spin',
-          success: 'fa-check-circle',
-          error: 'fa-exclamation-circle',
-        };
-        status.className = `mb-4 p-3 rounded-lg ${colors[type]} text-sm flex items-center gap-2`;
-        status.innerHTML = `<i class="fas ${icons[type]}"></i><span>${message}</span>`;
-        status.style.display = 'flex';
       }
 
       // API call wrapper
@@ -224,7 +205,6 @@
           return await response.json();
         } catch (error) {
           console.error('API Error:', error);
-          showStatus(`Connection error: ${error.message}`, 'error');
           throw error;
         }
       }
@@ -232,15 +212,11 @@
       // Load tasks
       async function loadTasks() {
         try {
-          showStatus('Loading tasks...', 'info');
           tasks = await apiCall('/tasks');
-          showStatus(`Loaded ${tasks.length} tasks successfully`, 'success');
-          setTimeout(() => {
-            document.getElementById('apiStatus').style.display = 'none';
-          }, 2000);
           renderTasks();
         } catch (error) {
-          showStatus('Failed to load tasks - Check server connection', 'error');
+          console.error('Failed to load tasks:', error);
+          alert('Failed to load tasks - Check server connection');
         }
       }
 
@@ -258,26 +234,23 @@
 
         try {
           if (editingTaskId) {
-            showStatus('Updating task...', 'info');
             await apiCall(`/tasks/${editingTaskId}`, {
               method: 'PUT',
               body: JSON.stringify({ title, desc, deadline, priority }),
             });
-            showStatus('Task updated successfully', 'success');
             editingTaskId = null;
             document.getElementById('submitBtnText').textContent = 'Add Task';
           } else {
-            showStatus('Adding task...', 'info');
             await apiCall('/tasks', {
               method: 'POST',
               body: JSON.stringify({ title, desc, deadline, priority }),
             });
-            showStatus('Task added successfully', 'success');
           }
           clearForm();
           loadTasks();
         } catch (error) {
-          showStatus('Operation failed', 'error');
+          console.error('Operation failed:', error);
+          alert('Operation failed - Please try again');
         }
       }
 
@@ -306,12 +279,11 @@
       async function deleteTask(id) {
         if (confirm('Are you sure you want to delete this task?')) {
           try {
-            showStatus('Deleting...', 'info');
             await apiCall(`/tasks/${id}`, { method: 'DELETE' });
-            showStatus('Deleted successfully', 'success');
             loadTasks();
           } catch (error) {
-            showStatus('Delete failed', 'error');
+            console.error('Delete failed:', error);
+            alert('Delete failed - Please try again');
           }
         }
       }
@@ -321,7 +293,8 @@
           await apiCall(`/tasks/${id}/toggle`, { method: 'PATCH' });
           loadTasks();
         } catch (error) {
-          showStatus('Failed to update status', 'error');
+          console.error('Failed to update status:', error);
+          alert('Failed to update status - Please try again');
         }
       }
 
